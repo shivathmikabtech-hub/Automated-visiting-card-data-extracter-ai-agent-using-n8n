@@ -1,0 +1,252 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "visiting-card",
+        "responseMode": "lastNode",
+        "options": {
+          "responsePropertyName": "file"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f3f4ea9d-4939-4db7-83c3-a84d074af0b4",
+      "name": "Webhook",
+      "webhookId": "a17a3743-98ec-496b-b1e9-5c678fd7ca81"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "Extract the following details from this visiting card image.\nReturn ONLY JSON in this exact format:\n{\n  \"firstname\": \"\",\n  \"lastname\": \"\",\n  \"phone\": \"\",\n  \"email\": \"\",\n  \"company\": \"\",\n  \"designation\": \"\",\n  \"address\": \"\",\n  \"industry\": \"\"\n}\n\nRules:\n- Do not explain anything\n- Do not add extra text\n- Only return JSON\n- Split the full name into firstname and lastname\n- If only one name exists, put it in firstname and keep lastname as \"\"\n- If value missing, keep empty string \"\"\n\nFor industry detection:\n- Read the FULL card carefully — look at company name, tagline, \n  products/services mentioned, logo text, and designation\n- Be SPECIFIC, not broad. Examples:\n  * \"Vijayalakshmi Health & Surgicals\" + sells furniture = \n    \"Hospital Furniture Manufacturing\" NOT \"Healthcare\"\n  * \"ABC Pharma\" = \"Pharmaceuticals\" NOT \"Healthcare\"\n  * \"XYZ Hospitals\" = \"Healthcare\" \n  * \"RealCare Properties\" = \"Real Estate\" NOT \"Healthcare\"\n- Use this logic:\n  * If card mentions manufacturing/suppliers/products = \n    focus on WHAT they make, not WHO they sell to\n  * If card mentions hospital/clinic/doctor = \"Healthcare\"\n  * If card mentions software/IT/tech = \"Technology\"\n  * If card mentions school/college/training = \"Education\"\n  * If card mentions bank/insurance/investment = \"Finance\"\n  * If card mentions construction/interiors = \"Construction\"\n  * If card mentions legal/advocate/law = \"Legal\"\n  * If card mentions hotel/restaurant/travel = \"Hospitality\"\n  * If card mentions marketing/advertising/media = \"Marketing\"\n  * If card mentions retail/trading/distribution = \"Trading\"\n- If industry truly cannot be determined, keep empty string \"\""
+            },
+            {
+              "type": "image",
+              "imageType": "base64",
+              "binaryPropertyName": "file"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "896c58c4-a7ce-41bc-be54-6f5c502fe420",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Kc0JuIx6U8qxbc9Z",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.output[0].content[0].text;\nconst jsonStart = text.indexOf('{');\nconst jsonEnd = text.lastIndexOf('}') + 1;\nconst cleanJson = text.substring(jsonStart, jsonEnd);\nconst data = JSON.parse(cleanJson);\n\ndata.phone = \"'\" + data.phone;\n\nreturn [{ json: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "fb045d3e-881a-4988-a042-6bf908b67eb4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1oU6-XkkfBoLAunLzZPuP972tD5TeEkgSLqFvECd4h1U",
+          "mode": "list",
+          "cachedResultName": "visiting cards leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oU6-XkkfBoLAunLzZPuP972tD5TeEkgSLqFvECd4h1U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oU6-XkkfBoLAunLzZPuP972tD5TeEkgSLqFvECd4h1U/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first name": "={{ $json.firstname }}",
+            "last name": "={{ $json.lastname }}",
+            "phone ": "={{ $json.phone }}",
+            "email": "={{ $json.email }}",
+            "company": "={{ $json.company }}",
+            "industry": "={{ $json.industry }}",
+            "designation": "={{ $json.designation }}",
+            "address": "={{ $json.address }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "first name",
+              "displayName": "first name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last name",
+              "displayName": "last name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone ",
+              "displayName": "phone ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "industry",
+              "displayName": "industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "designation",
+              "displayName": "designation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        0
+      ],
+      "id": "95e0e1b0-2e4b-4049-8d3e-07e0a7a1ad4f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TEiAZVVuqU8qvwgR",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
